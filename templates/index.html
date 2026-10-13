@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SmartTrip | AI Travel Planner</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <div class="logo">
+            <span class="logo-icon">✈</span>
+            SmartTrip
+        </div>
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#planner">Plan a Trip</a>
+            <a href="#features">Features</a>
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <section class="hero" id="home">
+
+            <div class="hero-content">
+
+                <span class="tag">
+                    YOUR PERSONAL TRAVEL PLANNER
+                </span>
+
+                <h1>
+                    Your next adventure,
+                    <span>planned smarter.</span>
+                </h1>
+
+                <p>
+                    Create a personalized travel itinerary,
+                    explore attractions and estimate your trip
+                    expenses—all in one place.
+                </p>
+
+                <a href="#planner" class="primary-button">
+                    Plan My Trip →
+                </a>
+
+                <div class="hero-highlights">
+
+                    <div>
+                        <strong>7+</strong>
+                        <span>Destinations</span>
+                    </div>
+
+                    <div>
+                        <strong>Budget</strong>
+                        <span>Estimation</span>
+                    </div>
+
+                    <div>
+                        <strong>Custom</strong>
+                        <span>Itineraries</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="hero-card">
+
+                <div class="hero-card-top">
+                    <span>✦ SmartTrip Planner</span>
+                    <span>● Ready</span>
+                </div>
+
+                <div class="travel-illustration">
+                    <div class="sun"></div>
+                    <div class="mountain mountain-one"></div>
+                    <div class="mountain mountain-two"></div>
+                    <div class="road"></div>
+                    <div class="pin">📍</div>
+                </div>
+
+                <div class="hero-card-bottom">
+                    <div>
+                        <small>YOUR NEXT STOP</small>
+                        <h3>Somewhere wonderful</h3>
+                    </div>
+
+                    <span class="plane">✈</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="planner-section" id="planner">
+
+            <div class="section-heading">
+
+                <span class="tag">TRAVEL PLANNER</span>
+
+                <h2>Plan your perfect getaway</h2>
+
+                <p>
+                    Tell us about your trip. SmartTrip will
+                    prepare an estimated itinerary for you.
+                </p>
+
+            </div>
+
+
+            <div class="planner-layout">
+
+                <div class="form-card">
+
+                    <h3>✦ Tell us your travel plans</h3>
+
+                    <p class="form-description">
+                        Complete the details below to generate
+                        your personalized trip.
+                    </p>
+
+
+                    {% if error %}
+
+                    <div class="error-message">
+                        {{ error }}
+                    </div>
+
+                    {% endif %}
+
+
+                    <form method="POST" action="#results">
+
+                        <div class="form-group">
+
+                            <label for="source">
+                                Starting location
+                            </label>
+
+                            <input
+                                type="text"
+                                id="source"
+                                name="source"
+                                placeholder="e.g. Bengaluru"
+                                value="{{ request.form.get('source', '') }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="destination">
+                                Destination
+                            </label>
+
+                            <select
+                                id="destination"
+                                name="destination"
+                                required
+                            >
+
+                                <option value="">
+                                    Choose your destination
+                                </option>
+
+                                {% for destination in destinations %}
+
+                                <option
+                                    value="{{ destination }}"
+                                    {% if request.form.get('destination') == destination %}
+                                    selected
+                                    {% endif %}
+                                >
+                                    {{ destination }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-row">
+
+                            <div class="form-group">
+
+                                <label for="days">
+                                    Trip duration
+                                </label>
+
+                                <select
+                                    id="days"
+                                    name="days"
+                                    required
+                                >
+
+                                    {% for day in range(1, 15) %}
+
+                                    <option
+                                        value="{{ day }}"
+                                        {% if request.form.get('days', '2')|int == day %}
+                                        selected
+                                        {% endif %}
+                                    >
+                                        {{ day }} day{% if day > 1 %}s{% endif %}
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="people">
+                                    Travellers
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="people"
+                                    name="people"
+                                    min="1"
+                                    max="20"
+                                    value="{{ request.form.get('people', '2') }}"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="budget">
+                                Total budget (₹)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="budget"
+                                name="budget"
+                                min="1"
+                                placeholder="e.g. 10000"
+                                value="{{ request.form.get('budget', '') }}"
+                                required
+                            >
+
+                            <small>
+                                Enter the total budget for all travellers.
+                            </small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="preference">
+                                What do you like exploring?
+                            </label>
+
+                            <select
+                                id="preference"
+                                name="preference"
+                            >
+
+                                {% set selected_preference = request.form.get('preference', 'All') %}
+
+                                <option
+                                    value="All"
+                                    {% if selected_preference == 'All' %}selected{% endif %}
+                                >
+                                    Everything
+                                </option>
+
+                                <option
+                                    value="Nature"
+                                    {% if selected_preference == 'Nature' %}selected{% endif %}
+                                >
+                                    Nature and scenery
+                                </option>
+
+                                <option
+                                    value="History"
+                                    {% if selected_preference == 'History' %}selected{% endif %}
+                                >
+                                    Historical places
+                                </option>
+
+                                <option
+                                    value="Culture"
+                                    {% if selected_preference == 'Culture' %}selected{% endif %}
+                                >
+                                    Culture and heritage
+                                </option>
+
+                                <option
+                                    value="Beach"
+                                    {% if selected_preference == 'Beach' %}selected{% endif %}
+                                >
+                                    Beaches
+                                </option>
+
+                                <option
+                                    value="Museum"
+                                    {% if selected_preference == 'Museum' %}selected{% endif %}
+                                >
+                                    Museums
+                                </option>
+
+                                <option
+                                    value="Shopping"
+                                    {% if selected_preference == 'Shopping' %}selected{% endif %}
+                                >
+                                    Shopping
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="primary-button full-button"
+                        >
+                            Generate My Trip →
+                        </button>
+
+                    </form>
+
+                    <p class="privacy-note">
+                        Your plan uses sample destination and
+                        cost information. Verify details before
+                        travelling.
+                    </p>
+
+                </div>
+
+
+                <div class="planner-info" id="features">
+
+                    <div class="info-card">
+
+                        <div class="info-icon">🧭</div>
+
+                        <h3>Personalized itinerary</h3>
+
+                        <p>
+                            Get a day-by-day plan based on your
+                            selected destination, duration and interests.
+                        </p>
+
+                    </div>
+
+
+                    <div class="info-card">
+
+                        <div class="info-icon">💰</div>
+
+                        <h3>Budget estimation</h3>
+
+                        <p>
+                            See estimated travel, accommodation,
+                            food, transport and sightseeing costs.
+                        </p>
+
+                    </div>
+
+
+                    <div class="info-card">
+
+                        <div class="info-icon">🏛️</div>
+
+                        <h3>Discover attractions</h3>
+
+                        <p>
+                            Explore sample attractions, including
+                            museums, beaches, churches and historical places.
+                        </p>
+
+                    </div>
+
+
+                    <div class="info-card">
+
+                        <div class="info-icon">🔄</div>
+
+                        <h3>Budget-aware planning</h3>
+
+                        <p>
+                            The planner tries cheaper hotel and
+                            sightseeing options if the estimated
+                            cost exceeds your budget.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        {% if trip %}
+
+        <section class="results-section" id="results">
+
+            <div class="section-heading">
+
+                <span class="tag">YOUR TRAVEL PLAN</span>
+
+                <h2>Your {{ trip.destination }} adventure</h2>
+
+                <p>{{ trip.description }}</p>
+
+            </div>
+
+
+            {% if trip.adjusted %}
+
+            <div class="notice-message">
+
+                <strong>Budget optimization attempted</strong>
+
+                <p>
+                    SmartTrip tried lower-cost hotel or sightseeing
+                    options. Review the final estimate below.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <div class="summary-grid">
+
+                <div class="summary-card">
+
+                    <span>📍 Destination</span>
+
+                    <h3>{{ trip.destination }}</h3>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span>📅 Duration</span>
+
+                    <h3>
+                        {{ trip.days }}
+                        day{% if trip.days > 1 %}s{% endif %}
+                    </h3>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span>👥 Travellers</span>
+
+                    <h3>{{ trip.people }}</h3>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span>💰 Total estimate</span>
+
+                    <h3>
+                        ₹{{ "{:,}".format(trip.costs.total) }}
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="results-grid">
+
+                <div class="result-card">
+
+                    <h3>💳 Estimated expense breakdown</h3>
+
+                    <p class="muted">
+                        Estimated total for the complete trip.
+                    </p>
+
+
+                    <div class="cost-row">
+
+                        <span>Travel</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.travel) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>Accommodation</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.accommodation) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>Food</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.food) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>Local transport</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.local_transport) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="cost-row">
+
+                        <span>Sightseeing</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.sightseeing) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="cost-row total-row">
+
+                        <span>Total estimated cost</span>
+
+                        <strong>
+                            ₹{{ "{:,}".format(trip.costs.total) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="budget-status
+                        {% if trip.within_budget %}
+                        budget-success
+                        {% else %}
+                        budget-warning
+                        {% endif %}
+                    ">
+
+                        {% if trip.within_budget %}
+
+                        ✓ Estimated cost is within your budget.
+
+                        {% else %}
+
+                        ⚠ Estimated cost exceeds your budget by
+                        ₹{{ "{:,}".format(trip.costs.total - trip.budget) }}.
+
+                        Consider reducing the trip duration,
+                        choosing cheaper transport or increasing
+                        your budget.
+
+                        {% endif %}
+
+                    </div>
+
+                    <p class="muted">
+                        Your entered budget:
+                        ₹{{ "{:,}".format(trip.budget) }}
+                    </p>
+
+                </div>
+
+
+                <div class="result-card">
+
+                    <h3>🏨 Suggested sample accommodation</h3>
+
+                    <div class="hotel-card">
+
+                        <div class="hotel-icon">🏨</div>
+
+                        <div>
+
+                            <h4>{{ trip.hotel.name }}</h4>
+
+                            <p>{{ trip.hotel.type }} category</p>
+
+                            <strong>
+                                ₹{{ "{:,}".format(trip.hotel.price) }}
+                                per night
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <p class="hotel-disclaimer">
+                        This is sample accommodation data for
+                        demonstration purposes, not a verified
+                        hotel recommendation or live booking.
+                        Check actual rates and availability before
+                        making a reservation.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-card attraction-card">
+
+                <h3>📍 Recommended attractions</h3>
+
+                <p class="muted">
+                    Places selected for your travel interests.
+                </p>
+
+
+                <div class="attraction-grid">
+
+                    {% for attraction in trip.attractions %}
+
+                    <div class="attraction-item">
+
+                        <div class="attraction-icon">📌</div>
+
+                        <div>
+
+                            <h4>{{ attraction.name }}</h4>
+
+                            <span>{{ attraction.category }}</span>
+
+                            <p>
+                                Estimated entry cost:
+                                ₹{{ attraction.cost }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div class="result-card itinerary-card">
+
+                <h3>🗓️ Your day-by-day itinerary</h3>
+
+                <p class="muted">
+                    A suggested schedule that you can customize.
+                </p>
+
+
+                {% for item in trip.itinerary %}
+
+                <div class="itinerary-day">
+
+                    <div class="day-label">
+                        DAY {{ item.day }}
+                    </div>
+
+                    <div class="itinerary-content">
+
+                        <div class="itinerary-stop">
+
+                            <span class="time-label">
+                                MORNING
+                            </span>
+
+                            <h4>{{ item.morning }}</h4>
+
+                        </div>
+
+                        <div class="itinerary-stop">
+
+                            <span class="time-label">
+                                AFTERNOON
+                            </span>
+
+                            <h4>{{ item.afternoon }}</h4>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="review-box">
+
+                <h3>Before you travel</h3>
+
+                <p>
+                    This itinerary and its costs are estimates
+                    generated from sample data. Check transport
+                    fares, opening hours, attraction entry fees,
+                    accommodation rates and availability yourself.
+                    Allow extra time for travel between locations.
+                </p>
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="window.print()"
+                >
+                    🖨️ Print / Save as PDF
+                </button>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+    </main>
+
+
+    <footer class="footer">
+
+        <div class="logo">
+            <span class="logo-icon">✈</span>
+            SmartTrip
+        </div>
+
+        <p>
+            A student project demonstrating personalized
+            travel planning and budget estimation.
+        </p>
+
+        <small>
+            © 2026 SmartTrip. Educational demonstration only.
+        </small>
+
+    </footer>
+
+</body>
+
+</html>
